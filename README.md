@@ -32,7 +32,7 @@ To run from a local clone instead, build first then point to the dist entry:
   "mcpServers": {
     "second-opinion": {
       "command": "node",
-      "args": ["/mnt/c/Users/wvdsl/Git/second_opinion/dist/index.js"],
+      "args": ["/mnt/c/Users/darryl/Git/second_opinion/dist/index.js"],
       "env": {
         "OPENROUTER_API_KEY": "sk-or-..."
       }
