@@ -12,12 +12,16 @@ describe.skipIf(!canRun)("providers (integration)", () => {
   it("queries OpenRouter and returns formatted responses", async () => {
     const config = getConfig();
     const client = createClient(config.openrouterApiKey);
-    const results = await queryModels("Reply with just the word 'pong'.", config, client);
+    const results = await queryModels("Reply with just the word 'pong'.", config, client, {
+      temperature: 0,
+    });
 
     expect(results.length).toBe(config.models.length);
 
     for (const result of results) {
       expect(result.model).toBeTruthy();
+      expect(result.latency_ms).toBeTypeOf("number");
+      expect(result.latency_ms).toBeGreaterThan(0);
       if (result.error) {
         console.warn(`${result.model} errored: ${result.error}`);
       } else {

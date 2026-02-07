@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `review_code` tool — specialized code review with focus areas (security, performance, style, bugs)
+- `compare_approaches` tool — compare 2+ technical approaches with pros/cons/recommendation
+- `fact_check` tool — verify claims across models, prioritizing search-augmented models
+- `list_models` tool — return currently configured model list
+- `second-opinion://config` resource — read server configuration as JSON
+- `QueryOptions` interface — context, system_prompt, model/temperature/max_tokens overrides per request
+- Latency tracking (`latency_ms`) on all model responses
+- Retry logic — automatic single retry when a model returns a very short response (< 5 chars)
+- Structured JSON summary (audience: assistant) in tool responses with model stats
+- `StructuredSummary` and `buildStructuredSummary()` in formatter module
+- `src/prompts.ts` — system prompt templates for specialized tools
+- `SECOND_OPINION_TEMPERATURE` env var — default sampling temperature (0-2)
+- `SECOND_OPINION_MAX_TOKENS` env var — default max response tokens
+
+### Changed
+
+- `get_second_opinion` now accepts optional `context`, `system_prompt`, `models`, `max_tokens`, `temperature` parameters
+- `queryModels()` accepts optional 4th `QueryOptions` parameter (backward compatible)
+- Server version bumped to 0.3.0
+- Server instructions updated to describe all 5 tools and the resource
+- Tool responses now include both markdown (for users) and JSON summary (for assistants)
+
 ## [0.2.0] - 2026-02-07
 
 ### Added

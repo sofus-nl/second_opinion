@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { formatResults } from "./formatter.js";
+import { formatResults, buildStructuredSummary } from "./formatter.js";
 import type { ModelResult } from "./providers.js";
 
 describe("formatResults", () => {
@@ -49,5 +49,47 @@ describe("formatResults", () => {
   it("treats missing response as empty body", () => {
     const results: ModelResult[] = [{ model: "model-a" }];
     expect(formatResults(results)).toBe("### model-a\n\n");
+  });
+});
+
+describe("buildStructuredSummary", () => {
+  it("summarizes all-success results", () => {
+    const results: ModelResult[] = [
+      { model: "model-a", response: "Hello world", latency_ms: 100 },
+      { model: "model-b", response: "Hi there", latency_ms: 200 },
+    ];
+    const summary = buildStructuredSummary(results);
+    expect(summary.model_count).toBe(2);
+    expect(summary.success_count).toBe(2);
+    expect(summary.error_count).toBe(0);
+    expect(summary.avg_latency_ms).toBe(150);
+    expect(summary.models[0]).toEqual({
+      model: "model-a",
+      status: "success",
+      latency_ms: 100,
+      response_length: 11,
+    });
+  });
+
+  it("summarizes mixed results", () => {
+    const results: ModelResult[] = [
+      { model: "model-a", response: "OK", latency_ms: 50 },
+      { model: "model-b", error: "timeout", latency_ms: 5000 },
+    ];
+    const summary = buildStructuredSummary(results);
+    expect(summary.success_count).toBe(1);
+    expect(summary.error_count).toBe(1);
+    expect(summary.avg_latency_ms).toBe(2525);
+    expect(summary.models[1].status).toBe("error");
+    expect(summary.models[1].response_length).toBe(0);
+  });
+
+  it("handles results with no latency data", () => {
+    const results: ModelResult[] = [
+      { model: "model-a", response: "OK" },
+    ];
+    const summary = buildStructuredSummary(results);
+    expect(summary.avg_latency_ms).toBeNull();
+    expect(summary.models[0].latency_ms).toBeNull();
   });
 });

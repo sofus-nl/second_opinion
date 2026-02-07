@@ -44,4 +44,53 @@ describe("getConfig", () => {
     const config = getConfig();
     expect(config.timeout).toBe(60_000);
   });
+
+  it("parses SECOND_OPINION_TEMPERATURE as float", () => {
+    vi.stubEnv("OPENROUTER_API_KEY", "sk-test-123");
+    vi.stubEnv("SECOND_OPINION_TEMPERATURE", "0.7");
+    const config = getConfig();
+    expect(config.defaultTemperature).toBe(0.7);
+  });
+
+  it("parses SECOND_OPINION_MAX_TOKENS as integer", () => {
+    vi.stubEnv("OPENROUTER_API_KEY", "sk-test-123");
+    vi.stubEnv("SECOND_OPINION_MAX_TOKENS", "4096");
+    const config = getConfig();
+    expect(config.defaultMaxTokens).toBe(4096);
+  });
+
+  it("ignores invalid temperature (out of range)", () => {
+    vi.stubEnv("OPENROUTER_API_KEY", "sk-test-123");
+    vi.stubEnv("SECOND_OPINION_TEMPERATURE", "5.0");
+    const config = getConfig();
+    expect(config.defaultTemperature).toBeUndefined();
+  });
+
+  it("ignores invalid temperature (NaN)", () => {
+    vi.stubEnv("OPENROUTER_API_KEY", "sk-test-123");
+    vi.stubEnv("SECOND_OPINION_TEMPERATURE", "notanumber");
+    const config = getConfig();
+    expect(config.defaultTemperature).toBeUndefined();
+  });
+
+  it("ignores invalid max_tokens (zero)", () => {
+    vi.stubEnv("OPENROUTER_API_KEY", "sk-test-123");
+    vi.stubEnv("SECOND_OPINION_MAX_TOKENS", "0");
+    const config = getConfig();
+    expect(config.defaultMaxTokens).toBeUndefined();
+  });
+
+  it("ignores invalid max_tokens (negative)", () => {
+    vi.stubEnv("OPENROUTER_API_KEY", "sk-test-123");
+    vi.stubEnv("SECOND_OPINION_MAX_TOKENS", "-10");
+    const config = getConfig();
+    expect(config.defaultMaxTokens).toBeUndefined();
+  });
+
+  it("returns undefined for temperature and max_tokens when not set", () => {
+    vi.stubEnv("OPENROUTER_API_KEY", "sk-test-123");
+    const config = getConfig();
+    expect(config.defaultTemperature).toBeUndefined();
+    expect(config.defaultMaxTokens).toBeUndefined();
+  });
 });

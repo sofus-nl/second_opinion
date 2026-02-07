@@ -2,6 +2,8 @@ export interface Config {
   openrouterApiKey: string;
   models: string[];
   timeout: number;
+  defaultTemperature?: number;
+  defaultMaxTokens?: number;
 }
 
 const DEFAULT_MODELS = [
@@ -29,5 +31,19 @@ export function getConfig(): Config {
     ? parseInt(process.env.SECOND_OPINION_TIMEOUT, 10)
     : DEFAULT_TIMEOUT;
 
-  return { openrouterApiKey, models, timeout };
+  const rawTemp = process.env.SECOND_OPINION_TEMPERATURE;
+  const parsedTemp = rawTemp ? parseFloat(rawTemp) : undefined;
+  const defaultTemperature =
+    parsedTemp !== undefined && !isNaN(parsedTemp) && parsedTemp >= 0 && parsedTemp <= 2
+      ? parsedTemp
+      : undefined;
+
+  const rawMaxTokens = process.env.SECOND_OPINION_MAX_TOKENS;
+  const parsedMaxTokens = rawMaxTokens ? parseInt(rawMaxTokens, 10) : undefined;
+  const defaultMaxTokens =
+    parsedMaxTokens !== undefined && !isNaN(parsedMaxTokens) && parsedMaxTokens > 0
+      ? parsedMaxTokens
+      : undefined;
+
+  return { openrouterApiKey, models, timeout, defaultTemperature, defaultMaxTokens };
 }

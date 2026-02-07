@@ -32,7 +32,7 @@ To run from a local clone instead, build first then point to the dist entry:
   "mcpServers": {
     "second-opinion": {
       "command": "node",
-      "args": ["/mnt/c/Users/darryl/Git/second_opinion/dist/index.js"],
+      "args": ["/path/to/second_opinion/dist/index.js"],
       "env": {
         "OPENROUTER_API_KEY": "sk-or-..."
       }
@@ -47,7 +47,53 @@ To run from a local clone instead, build first then point to the dist entry:
 
 Sends a query to multiple AI models in parallel and returns all responses as formatted Markdown.
 
-**Input:** `{ "query": "your question here" }`
+**Input:**
+- `query` (string, required) — The question or prompt to send to all models
+- `context` (string, optional) — Additional context prepended to the query
+- `system_prompt` (string, optional) — System prompt sent to all models
+- `models` (string[], optional) — Override configured models for this request
+- `max_tokens` (number, optional) — Max response tokens per model
+- `temperature` (number, optional) — Sampling temperature (0-2)
+
+### `review_code`
+
+Send code to multiple AI models for review with a specific focus area.
+
+**Input:**
+- `code` (string, required) — The code to review
+- `language` (string, optional) — Programming language
+- `focus` (enum, required) — Review focus: `security`, `performance`, `style`, or `bugs`
+- `models` (string[], optional) — Override configured models
+- `max_tokens` (number, optional) — Max response tokens per model
+
+### `compare_approaches`
+
+Compare two or more technical approaches by sending them to multiple AI models.
+
+**Input:**
+- `question` (string, required) — The decision or problem to evaluate
+- `approaches` (string[], required, min 2) — The approaches to compare
+- `models` (string[], optional) — Override configured models
+
+### `fact_check`
+
+Fact-check a claim across multiple AI models, prioritizing search-augmented models.
+
+**Input:**
+- `claim` (string, required) — The claim to fact-check
+- `models` (string[], optional) — Override configured models
+
+### `list_models`
+
+Return the list of AI models currently configured.
+
+**Input:** none
+
+## Resources
+
+### `second-opinion://config`
+
+Returns server configuration as JSON (models, timeout, default temperature/max_tokens).
 
 ## Environment Variables
 
@@ -56,6 +102,8 @@ Sends a query to multiple AI models in parallel and returns all responses as for
 | `OPENROUTER_API_KEY` | Yes | - | Your OpenRouter API key |
 | `SECOND_OPINION_MODELS` | No | See below | Comma-separated model IDs |
 | `SECOND_OPINION_TIMEOUT` | No | `30000` | Per-model timeout in ms |
+| `SECOND_OPINION_TEMPERATURE` | No | - | Default sampling temperature (0-2) |
+| `SECOND_OPINION_MAX_TOKENS` | No | - | Default max response tokens |
 
 ## Default Models
 

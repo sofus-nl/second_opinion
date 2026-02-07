@@ -5,6 +5,15 @@ export interface ModelResult {
   model: string;
   response?: string;
   error?: string;
+  latency_ms?: number;
+}
+
+export interface QueryOptions {
+  context?: string;
+  system_prompt?: string;
+  models?: string[];
+  max_tokens?: number;
+  temperature?: number;
 }
 
 export function createClient(apiKey: string): OpenAI {
@@ -17,22 +26,55 @@ export function createClient(apiKey: string): OpenAI {
 export async function queryModels(
   query: string,
   config: Config,
-  client: OpenAI
+  client: OpenAI,
+  options?: QueryOptions
 ): Promise<ModelResult[]> {
-  const requests = config.models.map(async (model): Promise<ModelResult> => {
+  const models = options?.models ?? config.models;
+  const temperature = options?.temperature ?? config.defaultTemperature;
+  const max_tokens = options?.max_tokens ?? config.defaultMaxTokens;
+
+  const messages: OpenAI.ChatCompletionMessageParam[] = [];
+  if (options?.system_prompt) {
+    messages.push({ role: "system", content: options.system_prompt });
+  }
+  const userContent = options?.context
+    ? `${options.context}\n\n---\n\n${query}`
+    : query;
+  messages.push({ role: "user", content: userContent });
+
+  const requests = models.map(async (model): Promise<ModelResult> => {
+    const start = Date.now();
     try {
-      const completion = await client.chat.completions.create(
-        {
-          model,
-          messages: [{ role: "user", content: query }],
-        },
-        { timeout: config.timeout }
-      );
-      const response = completion.choices[0]?.message?.content ?? "";
-      return { model, response };
+      const params: OpenAI.ChatCompletionCreateParamsNonStreaming = {
+        model,
+        messages,
+      };
+      if (temperature !== undefined) params.temperature = temperature;
+      if (max_tokens !== undefined) params.max_tokens = max_tokens;
+
+      const completion = await client.chat.completions.create(params, {
+        timeout: config.timeout,
+      });
+      let response = completion.choices[0]?.message?.content ?? "";
+      const latency_ms = Date.now() - start;
+
+      // Retry once if response is suspiciously short
+      if (response.length < 5) {
+        try {
+          const retry = await client.chat.completions.create(params, {
+            timeout: config.timeout,
+          });
+          response = retry.choices[0]?.message?.content ?? response;
+        } catch {
+          // keep the short response
+        }
+      }
+
+      return { model, response, latency_ms };
     } catch (err) {
+      const latency_ms = Date.now() - start;
       const message = err instanceof Error ? err.message : String(err);
-      return { model, error: message };
+      return { model, error: message, latency_ms };
     }
   });
 

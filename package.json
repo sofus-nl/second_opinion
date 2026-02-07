@@ -1,6 +1,6 @@
 {
   "name": "second-opinion-mcp-server",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "MCP server that queries multiple AI models via OpenRouter for second opinions on any question",
   "type": "module",
   "main": "dist/index.js",
