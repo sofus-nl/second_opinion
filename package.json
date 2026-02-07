@@ -1,0 +1,49 @@
+{
+  "name": "second-opinion-mcp-server",
+  "version": "0.1.0",
+  "description": "MCP server that queries multiple AI models via OpenRouter for second opinions on any question",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "second-opinion-mcp-server": "dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run"
+  },
+  "keywords": [
+    "mcp",
+    "ai",
+    "openrouter",
+    "second-opinion",
+    "coding-assistant"
+  ],
+  "author": "sofus-nl",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sofus-nl/second_opinion.git"
+  },
+  "homepage": "https://github.com/sofus-nl/second_opinion#readme",
+  "bugs": {
+    "url": "https://github.com/sofus-nl/second_opinion/issues"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.26.0",
+    "openai": "^4.0.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "dotenv": "^17.2.4",
+    "typescript": "^5.5",
+    "vitest": "^3.0.0"
+  }
+}
