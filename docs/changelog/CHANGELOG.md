@@ -7,22 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-02-07
+
 ### Added
 
 - Unit tests for `formatter`, `config`, and `providers` modules using Vitest
 - `npm test` script for running tests
-- Test coverage: 17 tests across 3 test files
+- Test coverage: 18 tests across 4 test files (unit + integration)
 - GitHub Actions CI workflow (build + test on push/PR)
-- `CONTRIBUTING.md` with development setup and PR process
-- `SECURITY.md` with vulnerability reporting and API key guidance
-- `CODE_OF_CONDUCT.md` (Contributor Covenant v2.1)
+- GitHub Actions publish workflow (npm publish with provenance on GitHub release)
+- `CONTRIBUTING.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`
 - GitHub issue templates (bug report, feature request) and PR template
 - README badges (CI status, license, Node version)
 - `.nvmrc` pinned to Node 24
 - `package.json` metadata: `repository`, `author`, `engines`, `homepage`, `bugs`
-- GitHub Actions publish workflow (npm publish with provenance on GitHub release)
 - MCP server instructions for AI agent behavioral guidance
 - Output format description in tool metadata for better AI agent response handling
+
+### Changed
+
+- Default models updated to GPT-5.2, Gemini 3 Pro Preview, Grok 4.1 Fast, Sonar Reasoning Pro
+- Tool and server descriptions generalized to any topic (not just coding)
+- AI agents can now use the tool on their own initiative, not only when user requests
+- OpenAI client created once at startup for faster repeat calls
 
 ## [0.1.0] - 2025-02-06
 
