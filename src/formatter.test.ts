@@ -55,8 +55,8 @@ describe("formatResults", () => {
 describe("buildStructuredSummary", () => {
   it("summarizes all-success results", () => {
     const results: ModelResult[] = [
-      { model: "model-a", response: "Hello world", latency_ms: 100 },
-      { model: "model-b", response: "Hi there", latency_ms: 200 },
+      { model: "model-a", response: "Hello world", latency_ms: 100, prompt_tokens: 10, completion_tokens: 20 },
+      { model: "model-b", response: "Hi there", latency_ms: 200, prompt_tokens: 10, completion_tokens: 15 },
     ];
     const summary = buildStructuredSummary(results);
     expect(summary.model_count).toBe(2);
@@ -68,6 +68,8 @@ describe("buildStructuredSummary", () => {
       status: "success",
       latency_ms: 100,
       response_length: 11,
+      prompt_tokens: 10,
+      completion_tokens: 20,
     });
   });
 
@@ -91,5 +93,28 @@ describe("buildStructuredSummary", () => {
     const summary = buildStructuredSummary(results);
     expect(summary.avg_latency_ms).toBeNull();
     expect(summary.models[0].latency_ms).toBeNull();
+  });
+
+  it("includes per-model token counts (null when missing)", () => {
+    const results: ModelResult[] = [
+      { model: "model-a", response: "OK", prompt_tokens: 50, completion_tokens: 100 },
+      { model: "model-b", response: "Hi" },
+    ];
+    const summary = buildStructuredSummary(results);
+    expect(summary.models[0].prompt_tokens).toBe(50);
+    expect(summary.models[0].completion_tokens).toBe(100);
+    expect(summary.models[1].prompt_tokens).toBeNull();
+    expect(summary.models[1].completion_tokens).toBeNull();
+  });
+
+  it("calculates total token counts across all models", () => {
+    const results: ModelResult[] = [
+      { model: "model-a", response: "OK", prompt_tokens: 30, completion_tokens: 80 },
+      { model: "model-b", response: "Hi", prompt_tokens: 30, completion_tokens: 120 },
+      { model: "model-c", response: "Hey" },
+    ];
+    const summary = buildStructuredSummary(results);
+    expect(summary.total_prompt_tokens).toBe(60);
+    expect(summary.total_completion_tokens).toBe(200);
   });
 });

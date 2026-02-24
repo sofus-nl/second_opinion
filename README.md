@@ -83,11 +83,25 @@ Fact-check a claim across multiple AI models, prioritizing search-augmented mode
 - `claim` (string, required) — The claim to fact-check
 - `models` (string[], optional) — Override configured models
 
+### `follow_up`
+
+Drill deeper into a previous second-opinion response. Send the markdown from a prior tool call as context, then ask a follow-up question.
+
+**Input:**
+- `previous_responses` (string, required) — The markdown output from a prior second-opinion tool call
+- `question` (string, required) — The follow-up question to ask
+- `system_prompt` (string, optional) — System prompt sent to all models
+- `models` (string[], optional) — Override configured models
+- `max_tokens` (number, optional) — Max response tokens per model
+- `temperature` (number, optional) — Sampling temperature (0-2)
+
 ### `list_models`
 
-Return the list of AI models currently configured.
+Return configured models with pricing, context length, and capabilities.
 
 **Input:** none
+
+**Output:** JSON array where each entry includes: `id`, `name`, `context_length`, `max_completion_tokens`, `modality`, `input_cost_per_token`, `output_cost_per_token`.
 
 ## Resources
 

@@ -232,4 +232,44 @@ describe("queryModels", () => {
 
     expect(results[0].response).toBe("ok");
   });
+
+  it("extracts token usage from completion", async () => {
+    mockCreate.mockResolvedValue({
+      choices: [{ message: { content: "ok response" } }],
+      usage: { prompt_tokens: 50, completion_tokens: 120 },
+    });
+
+    const results = await queryModels("test", { ...baseConfig, models: ["model-a"] }, mockClient);
+
+    expect(results[0].prompt_tokens).toBe(50);
+    expect(results[0].completion_tokens).toBe(120);
+  });
+
+  it("returns undefined token usage when no usage field", async () => {
+    mockCreate.mockResolvedValue({
+      choices: [{ message: { content: "ok response" } }],
+    });
+
+    const results = await queryModels("test", { ...baseConfig, models: ["model-a"] }, mockClient);
+
+    expect(results[0].prompt_tokens).toBeUndefined();
+    expect(results[0].completion_tokens).toBeUndefined();
+  });
+
+  it("sums token usage across initial call and retry", async () => {
+    mockCreate
+      .mockResolvedValueOnce({
+        choices: [{ message: { content: "ok" } }],
+        usage: { prompt_tokens: 30, completion_tokens: 2 },
+      })
+      .mockResolvedValueOnce({
+        choices: [{ message: { content: "Full detailed response here" } }],
+        usage: { prompt_tokens: 30, completion_tokens: 80 },
+      });
+
+    const results = await queryModels("test", { ...baseConfig, models: ["model-a"] }, mockClient);
+
+    expect(results[0].prompt_tokens).toBe(60);
+    expect(results[0].completion_tokens).toBe(82);
+  });
 });

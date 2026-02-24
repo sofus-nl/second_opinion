@@ -12,6 +12,8 @@ import {
   COMPARE_APPROACHES_PROMPT,
   FACT_CHECK_PROMPT,
 } from "./prompts.js";
+import { fetchModelInfo, getModelInfo } from "./model-info.js";
+import type { ModelInfo } from "./model-info.js";
 
 function buildToolResponse(results: ModelResult[]) {
   const markdown = formatResults(results);
@@ -32,10 +34,17 @@ async function main() {
   const config = getConfig();
   const client = createClient(config.openrouterApiKey);
 
+  let modelInfoCache = new Map<string, ModelInfo>();
+  try {
+    modelInfoCache = await fetchModelInfo(config.openrouterApiKey);
+  } catch {
+    // Non-fatal: list_models will return basic entries
+  }
+
   const server = new McpServer(
     {
       name: "second-opinion",
-      version: "0.3.0",
+      version: "0.4.0",
     },
     {
       instructions: [
@@ -45,11 +54,13 @@ async function main() {
         "- review_code: Specialized code review with focus areas (security, performance, style, bugs).",
         "- compare_approaches: Compare 2+ technical approaches with pros/cons and a recommendation.",
         "- fact_check: Verify a claim across models, prioritizing search-augmented models.",
-        "- list_models: Show currently configured model list.",
+        "- follow_up: Drill deeper into a previous response. Send the markdown from a prior tool call as previous_responses, then ask a follow-up question.",
+        "- list_models: Show configured models with pricing, context length, and capabilities.",
         "",
         "Resource: second-opinion://config — read server configuration (models, timeout, defaults).",
         "",
-        "Present each model's response as-is. The structured JSON summary (audience: assistant) contains latency and success/error counts for your internal use.",
+        "All query tools include token usage (prompt_tokens, completion_tokens) in the structured JSON summary.",
+        "Present each model's response as-is. The structured JSON summary (audience: assistant) contains latency, token usage, and success/error counts for your internal use.",
       ].join("\n"),
     }
   );
@@ -76,11 +87,36 @@ async function main() {
   // --- list_models ---
   server.tool(
     "list_models",
-    "Return the list of AI models currently configured for second-opinion queries.",
+    "Return configured models with pricing, context length, and capabilities. Each entry includes: id, name, context_length, max_completion_tokens, modality, input_cost_per_token, output_cost_per_token.",
     {},
     async () => ({
-      content: [{ type: "text" as const, text: JSON.stringify(config.models) }],
+      content: [{ type: "text" as const, text: JSON.stringify(getModelInfo(modelInfoCache, config.models)) }],
     })
+  );
+
+  // --- follow_up ---
+  server.tool(
+    "follow_up",
+    "Drill deeper into a previous second-opinion response. Send the markdown from a prior tool call as previous_responses, then ask a follow-up question. The previous responses are sent as context so models can reference them.",
+    {
+      previous_responses: z.string().describe("The markdown output from a prior second-opinion tool call"),
+      question: z.string().describe("The follow-up question to ask about the previous responses"),
+      system_prompt: z.string().optional().describe("System prompt sent to all models"),
+      models: z.array(z.string()).optional().describe("Override configured models for this request"),
+      max_tokens: z.number().int().positive().optional().describe("Max response tokens per model"),
+      temperature: z.number().min(0).max(2).optional().describe("Sampling temperature (0-2)"),
+    },
+    async ({ previous_responses, question, system_prompt, models, max_tokens, temperature }) => {
+      const options: QueryOptions = {
+        context: previous_responses,
+        system_prompt,
+        models,
+        max_tokens,
+        temperature,
+      };
+      const results = await queryModels(question, config, client, options);
+      return buildToolResponse(results);
+    }
   );
 
   // --- review_code ---

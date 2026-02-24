@@ -5,7 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.4.0] - 2026-02-24
+
+### Added
+
+- `follow_up` tool — drill deeper into previous responses by sending prior markdown as context with a new question
+- `src/model-info.ts` — fetches and caches OpenRouter model metadata (pricing, context length, modality)
+- Token usage tracking (`prompt_tokens`, `completion_tokens`) on all model responses
+- Per-model and total token counts in `StructuredSummary`
+
+### Changed
+
+- `list_models` now returns detailed model info: name, context_length, max_completion_tokens, modality, input/output cost per token
+- Server version bumped to 0.4.0
+- Server instructions updated to describe `follow_up` tool and token usage in summaries
+
+## [0.3.0] - 2026-02-07
 
 ### Added
 

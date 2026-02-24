@@ -1,6 +1,6 @@
 # Project: second-opinion-mcp-server
 
-MCP server that queries multiple AI models in parallel via OpenRouter. 5 tools + 1 resource.
+MCP server that queries multiple AI models in parallel via OpenRouter. 6 tools + 1 resource.
 
 ## Commands
 
@@ -15,12 +15,13 @@ MCP server that queries multiple AI models in parallel via OpenRouter. 5 tools +
 src/
   index.ts       — MCP server entry point, tool/resource registration, buildToolResponse helper
   config.ts      — env var parsing (API key, models, timeout, temperature, max_tokens)
-  providers.ts   — OpenAI client creation, parallel model querying with QueryOptions, latency, retry
-  formatter.ts   — markdown formatting + StructuredSummary builder
+  providers.ts   — OpenAI client creation, parallel model querying with QueryOptions, latency, retry, token usage
+  formatter.ts   — markdown formatting + StructuredSummary builder (includes token counts)
   prompts.ts     — system prompt templates for review_code, compare_approaches, fact_check
+  model-info.ts  — fetch + cache OpenRouter model metadata (pricing, context length, modality)
 ```
 
-5 source modules. Each has a co-located `.test.ts`. Integration test in `providers.integration.test.ts`.
+6 source modules. Each has a co-located `.test.ts`. Integration test in `providers.integration.test.ts`.
 
 ## Tools
 
@@ -28,7 +29,8 @@ src/
 - `review_code` — code review with focus area (security/performance/style/bugs)
 - `compare_approaches` — compare 2+ approaches with pros/cons/recommendation
 - `fact_check` — verify claims, prioritizes search-augmented models
-- `list_models` — return configured model list
+- `follow_up` — drill deeper into previous responses with a follow-up question
+- `list_models` — return configured models with pricing, context length, and capabilities
 
 ## Resources
 

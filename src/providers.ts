@@ -6,6 +6,8 @@ export interface ModelResult {
   response?: string;
   error?: string;
   latency_ms?: number;
+  prompt_tokens?: number;
+  completion_tokens?: number;
 }
 
 export interface QueryOptions {
@@ -57,6 +59,8 @@ export async function queryModels(
       });
       let response = completion.choices[0]?.message?.content ?? "";
       const latency_ms = Date.now() - start;
+      let prompt_tokens = completion.usage?.prompt_tokens;
+      let completion_tokens = completion.usage?.completion_tokens;
 
       // Retry once if response is suspiciously short
       if (response.length < 5) {
@@ -65,12 +69,16 @@ export async function queryModels(
             timeout: config.timeout,
           });
           response = retry.choices[0]?.message?.content ?? response;
+          if (retry.usage) {
+            prompt_tokens = (prompt_tokens ?? 0) + (retry.usage.prompt_tokens ?? 0);
+            completion_tokens = (completion_tokens ?? 0) + (retry.usage.completion_tokens ?? 0);
+          }
         } catch {
           // keep the short response
         }
       }
 
-      return { model, response, latency_ms };
+      return { model, response, latency_ms, prompt_tokens, completion_tokens };
     } catch (err) {
       const latency_ms = Date.now() - start;
       const message = err instanceof Error ? err.message : String(err);

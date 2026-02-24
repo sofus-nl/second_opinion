@@ -5,11 +5,15 @@ export interface StructuredSummary {
   success_count: number;
   error_count: number;
   avg_latency_ms: number | null;
+  total_prompt_tokens: number;
+  total_completion_tokens: number;
   models: {
     model: string;
     status: "success" | "error";
     latency_ms: number | null;
     response_length: number;
+    prompt_tokens: number | null;
+    completion_tokens: number | null;
   }[];
 }
 
@@ -19,6 +23,8 @@ export function buildStructuredSummary(results: ModelResult[]): StructuredSummar
     status: (r.error ? "error" : "success") as "success" | "error",
     latency_ms: r.latency_ms ?? null,
     response_length: r.error ? 0 : (r.response?.length ?? 0),
+    prompt_tokens: r.prompt_tokens ?? null,
+    completion_tokens: r.completion_tokens ?? null,
   }));
 
   const latencies = results
@@ -29,11 +35,16 @@ export function buildStructuredSummary(results: ModelResult[]): StructuredSummar
       ? Math.round(latencies.reduce((a, b) => a + b, 0) / latencies.length)
       : null;
 
+  const total_prompt_tokens = results.reduce((sum, r) => sum + (r.prompt_tokens ?? 0), 0);
+  const total_completion_tokens = results.reduce((sum, r) => sum + (r.completion_tokens ?? 0), 0);
+
   return {
     model_count: results.length,
     success_count: results.filter((r) => !r.error).length,
     error_count: results.filter((r) => !!r.error).length,
     avg_latency_ms,
+    total_prompt_tokens,
+    total_completion_tokens,
     models,
   };
 }
