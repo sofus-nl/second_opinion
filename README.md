@@ -1,15 +1,41 @@
 # second-opinion-mcp-server
 
 [![CI](https://github.com/sofus-nl/second_opinion/actions/workflows/ci.yml/badge.svg)](https://github.com/sofus-nl/second_opinion/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/second-opinion-mcp-server)](https://www.npmjs.com/package/second-opinion-mcp-server)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D24-brightgreen)](https://nodejs.org)
 
 An MCP server that queries multiple AI models in parallel via [OpenRouter](https://openrouter.ai), giving your AI agent a "second opinion" on any question.
 
+## Features
+
+- **6 specialized tools** — general queries, code review, approach comparison, fact-checking, follow-ups, and model listing
+- **Parallel model querying** — all models are queried simultaneously with per-model error isolation
+- **Token usage tracking** — every response includes `prompt_tokens` and `completion_tokens` per model and totals
+- **Latency tracking** — each model response includes `latency_ms`
+- **Automatic retry** — retries models that return very short responses (< 5 chars)
+- **Structured summaries** — tool responses include both human-readable Markdown and a JSON summary for AI agents
+
 ## Quick Start
 
 1. Get an API key from [OpenRouter](https://openrouter.ai/keys)
-2. Add to your MCP client config:
+2. Install using one of the options below:
+
+### One-Click Install
+
+[![Install in VS Code](https://img.shields.io/badge/VS_Code-Install_Server-0098FF?style=flat-square&logo=visualstudiocode&logoColor=white)](https://insiders.vscode.dev/redirect/mcp/install?name=second-opinion&inputs=%5B%7B%22id%22%3A%22openrouter_api_key%22%2C%22type%22%3A%22promptString%22%2C%22description%22%3A%22OpenRouter%20API%20Key%22%2C%22password%22%3Atrue%7D%5D&config=%7B%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22second-opinion-mcp-server%22%5D%2C%22env%22%3A%7B%22OPENROUTER_API_KEY%22%3A%22%24%7Binput%3Aopenrouter_api_key%7D%22%7D%7D)
+[![Install in VS Code Insiders](https://img.shields.io/badge/VS_Code_Insiders-Install_Server-24bfa5?style=flat-square&logo=visualstudiocode&logoColor=white)](https://insiders.vscode.dev/redirect/mcp/install?name=second-opinion&inputs=%5B%7B%22id%22%3A%22openrouter_api_key%22%2C%22type%22%3A%22promptString%22%2C%22description%22%3A%22OpenRouter%20API%20Key%22%2C%22password%22%3Atrue%7D%5D&config=%7B%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22second-opinion-mcp-server%22%5D%2C%22env%22%3A%7B%22OPENROUTER_API_KEY%22%3A%22%24%7Binput%3Aopenrouter_api_key%7D%22%7D%7D&quality=insiders)
+[![Install in Cursor](https://img.shields.io/badge/Cursor-Install_Server-F14C28?style=flat-square&logo=cursor&logoColor=white)](cursor://anysphere.cursor-deeplink/mcp/install?name=second-opinion&inputs=%5B%7B%22id%22%3A%22openrouter_api_key%22%2C%22type%22%3A%22promptString%22%2C%22description%22%3A%22OpenRouter%20API%20Key%22%2C%22password%22%3Atrue%7D%5D&config=%7B%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22second-opinion-mcp-server%22%5D%2C%22env%22%3A%7B%22OPENROUTER_API_KEY%22%3A%22%24%7Binput%3Aopenrouter_api_key%7D%22%7D%7D)
+[![smithery badge](https://smithery.ai/badge/second-opinion-mcp-server)](https://smithery.ai/server/second-opinion-mcp-server)
+
+### Manual Configuration
+
+<details open>
+<summary><b>Claude Desktop</b></summary>
+
+Add to your config file:
+- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- Windows: `%APPDATA%\Claude\claude_desktop_config.json`
 
 ```json
 {
@@ -25,7 +51,115 @@ An MCP server that queries multiple AI models in parallel via [OpenRouter](https
 }
 ```
 
-To run from a local clone instead, build first then point to the dist entry:
+Restart Claude Desktop after saving.
+
+</details>
+
+<details>
+<summary><b>Cursor</b></summary>
+
+Add to `~/.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "second-opinion": {
+      "command": "npx",
+      "args": ["-y", "second-opinion-mcp-server"],
+      "env": {
+        "OPENROUTER_API_KEY": "sk-or-..."
+      }
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><b>VS Code (Copilot)</b></summary>
+
+Create `.vscode/mcp.json` in your workspace:
+
+```json
+{
+  "mcp": {
+    "servers": {
+      "second-opinion": {
+        "command": "npx",
+        "args": ["-y", "second-opinion-mcp-server"],
+        "env": {
+          "OPENROUTER_API_KEY": "sk-or-..."
+        }
+      }
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><b>Claude Code</b></summary>
+
+```bash
+claude mcp add second-opinion \
+  --scope user \
+  --transport stdio \
+  npx -y second-opinion-mcp-server \
+  --env OPENROUTER_API_KEY=sk-or-...
+```
+
+Verify with `/mcp` inside Claude Code.
+
+</details>
+
+<details>
+<summary><b>Windsurf</b></summary>
+
+Add to `~/.codeium/windsurf/mcp_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "second-opinion": {
+      "command": "npx",
+      "args": ["-y", "second-opinion-mcp-server"],
+      "env": {
+        "OPENROUTER_API_KEY": "sk-or-..."
+      }
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><b>Gemini CLI</b></summary>
+
+Add to your `settings.json`:
+
+```json
+{
+  "mcpServers": {
+    "second-opinion": {
+      "command": "npx",
+      "args": ["-y", "second-opinion-mcp-server"],
+      "env": {
+        "OPENROUTER_API_KEY": "sk-or-..."
+      }
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><b>Local clone</b></summary>
+
+Build first, then point to the dist entry:
 
 ```json
 {
@@ -40,6 +174,8 @@ To run from a local clone instead, build first then point to the dist entry:
   }
 }
 ```
+
+</details>
 
 ## Tools
 
