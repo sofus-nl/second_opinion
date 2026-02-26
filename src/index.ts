@@ -44,7 +44,7 @@ async function main() {
   const server = new McpServer(
     {
       name: "second-opinion",
-      version: "0.4.0",
+      version: "0.4.1",
     },
     {
       instructions: [
